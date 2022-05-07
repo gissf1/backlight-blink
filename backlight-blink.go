@@ -405,9 +405,16 @@ func getTimeString() (string) {
 
 func show() {
 	var time = getTimeString()
-	var long = fmt.Sprintf("[%s] HIGHVAL=%d, TARGET=%d, HSLEEPUS=%d, TSLEEPUS=%d, ZINTERVAL=%d, SLEEPSCALE=%d, HZ=%d.", time, cfg.HIGHVAL, cfg.TARGET, cfg.HSLEEPUS, cfg.TSLEEPUS, cfg.ZINTERVAL, cfg.SLEEPSCALE, HZ)
+	var zintstr = ""
+	if cfg.ZINTERVAL > 0 {
+		zintstr = fmt.Sprintf("ZINTERVAL=%d, ", cfg.ZINTERVAL)
+	}
+	var long = fmt.Sprintf("[%s] HIGHVAL=%d, TARGET=%d, HSLEEPUS=%d, TSLEEPUS=%d, SLEEPSCALE=%d, %sHZ=%d.", time, cfg.HIGHVAL, cfg.TARGET, cfg.HSLEEPUS, cfg.TSLEEPUS, cfg.SLEEPSCALE, zintstr, HZ)
 	if len(long) > COLUMNS {
-		fmt.Printf("\r[%s] HIv=%d, TGTv=%d, HSus=%d, TSus=%d, ZI=%d, S=%d, HZ=%d.", time, cfg.HIGHVAL, cfg.TARGET, cfg.HSLEEPUS, cfg.TSLEEPUS, cfg.ZINTERVAL, cfg.SLEEPSCALE, HZ)
+		if cfg.ZINTERVAL > 0 {
+			zintstr = fmt.Sprintf("ZI=%d, ", cfg.ZINTERVAL)
+		}
+		fmt.Printf("\r[%s] HIv=%d, TGTv=%d, HSus=%d, TSus=%d, S=%d, %sHZ=%d.", time, cfg.HIGHVAL, cfg.TARGET, cfg.HSLEEPUS, cfg.TSLEEPUS, cfg.SLEEPSCALE, zintstr, HZ)
 	} else {
 		fmt.Printf("\r%s", long)
 	}
@@ -451,10 +458,10 @@ func checkKey() {
 			case 'r': cfg.TSLEEPUS *= 2
 			case 'f': cfg.TSLEEPUS += cfg.SLEEPSCALE
 			case 'v': cfg.TSLEEPUS = decIfAbove(cfg.TSLEEPUS, cfg.SLEEPSCALE)
-			case 'g': cfg.ZINTERVAL = ( cfg.ZINTERVAL * 2 ) + 1
-			case 'b': cfg.ZINTERVAL /= 2
-			case 'h': cfg.SLEEPSCALE *= 2
-			case 'n': cfg.SLEEPSCALE /= 2
+			case 'g': cfg.SLEEPSCALE *= 2
+			case 'b': cfg.SLEEPSCALE /= 2
+			case 'h': cfg.ZINTERVAL = ( cfg.ZINTERVAL * 2 ) + 1
+			case 'n': cfg.ZINTERVAL /= 2
 			default:
 				fmt.Printf("Unknown key: %s\n", ch)
 				time.Sleep(5)
