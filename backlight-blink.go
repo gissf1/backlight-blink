@@ -53,6 +53,7 @@ var (
 	KEYBUFFER = make(chan string, 256)
 	COLUMNS int
 	BrightnessFile string
+	openIntFiles map[string] *os.File = make(map[string] *os.File)
 )
 
 func ReadDirUnsorted(dirname string) ([]os.FileInfo, error) {
@@ -140,14 +141,27 @@ func ReplaceFileContent(path string, data string) (error) {
 	return err
 }
 
-func ReplaceFileIntContent(path string, i int) (error) {
+func OpenIntFile(path string) (*os.File, error) {
+	f, ok := openIntFiles[path]
+	if ok {
+		return f, nil
+	}
 	f, err := os.OpenFile(path, os.O_WRONLY|os.O_TRUNC, 0)
+	if err != nil {
+		return nil, err
+	}
+	openIntFiles[path] = f
+	return f, nil
+}
+
+func ReplaceFileIntContent(path string, i int) (error) {
+	f, err := OpenIntFile(path)
 	if err != nil {
 		return err
 	}
 	s := strconv.Itoa(i)
-	_, err = f.Write([]byte(s))
-	if err1 := f.Close(); err1 != nil && err == nil {
+	_, err = f.WriteAt([]byte(s), 0)
+	if err1 := f.Sync(); err1 != nil && err == nil {
 		err = err1
 	}
 	return err
