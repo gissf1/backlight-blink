@@ -451,7 +451,6 @@ func hzcheck() {
 	HZ += 1
 	now := time.Now().Unix()
 	if now != LASTHZSEC {
-		HZ /= 2
 		show()
 		LASTHZSEC = time.Now().Unix()
 		HZ = 0
