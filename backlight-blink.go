@@ -18,8 +18,10 @@ const PathSeparator = string(os.PathSeparator)
 type ConfigFileType struct {
 	VERSION    string
 	HIGHVAL    int
+	LOWVAL     int
 	TARGET     int
 	HSLEEPUS   int
+	LSLEEPUS   int
 	TSLEEPUS   int
 	SLEEPSCALE int
 	ZINTERVAL  int
@@ -29,7 +31,9 @@ func DefaultConfig() (ConfigFileType) {
 	return ConfigFileType{
 		"",
 		255,
+		1,
 		216,
+		65536,
 		65536,
 		65536,
 		512,
@@ -366,6 +370,13 @@ func checkAndSave() {
 	} else if cfg.TARGET < 16 && cfg.HIGHVAL < 1 {
 		cfg.HIGHVAL = 1
 	}
+	if cfg.LOWVAL > MAX {
+		cfg.LOWVAL = MAX
+	} else if cfg.LOWVAL < 0 {
+		cfg.LOWVAL = 0
+	} else if cfg.TARGET < 16 && cfg.LOWVAL < 1 {
+		cfg.LOWVAL = 1
+	}
 	if cfg.TARGET > MAX {
 		cfg.TARGET = MAX
 	} else if cfg.TARGET < 1 {
@@ -375,6 +386,11 @@ func checkAndSave() {
 		cfg.HSLEEPUS = 1048576
 	} else if cfg.HSLEEPUS < 10 {
 		cfg.HSLEEPUS = 10
+	}
+	if cfg.LSLEEPUS > 1048576 {
+		cfg.LSLEEPUS = 1048576
+	} else if cfg.LSLEEPUS < 10 {
+		cfg.LSLEEPUS = 10
 	}
 	if cfg.TSLEEPUS > 1048576 {
 		cfg.TSLEEPUS = 1048576
@@ -409,12 +425,12 @@ func show() {
 	if cfg.ZINTERVAL > 0 {
 		zintstr = fmt.Sprintf("ZINTERVAL=%d, ", cfg.ZINTERVAL)
 	}
-	var long = fmt.Sprintf("[%s] HIGHVAL=%d, TARGET=%d, HSLEEPUS=%d, TSLEEPUS=%d, SLEEPSCALE=%d, %sHZ=%d.", time, cfg.HIGHVAL, cfg.TARGET, cfg.HSLEEPUS, cfg.TSLEEPUS, cfg.SLEEPSCALE, zintstr, HZ)
+	var long = fmt.Sprintf("[%s] H/L-VAL=%d/%d, TARGET=%d, H/L-SLEEPUS=%d/%d, TSLEEPUS=%d, SLEEPSCALE=%d, %sHZ=%d.", time, cfg.HIGHVAL, cfg.LOWVAL, cfg.TARGET, cfg.HSLEEPUS, cfg.LSLEEPUS, cfg.TSLEEPUS, cfg.SLEEPSCALE, zintstr, HZ)
 	if len(long) > COLUMNS {
 		if cfg.ZINTERVAL > 0 {
 			zintstr = fmt.Sprintf("ZI=%d, ", cfg.ZINTERVAL)
 		}
-		fmt.Printf("\r[%s] HIv=%d, TGTv=%d, HSus=%d, TSus=%d, S=%d, %sHZ=%d.", time, cfg.HIGHVAL, cfg.TARGET, cfg.HSLEEPUS, cfg.TSLEEPUS, cfg.SLEEPSCALE, zintstr, HZ)
+		fmt.Printf("\r[%s] H/Lv=%d/%d, TGTv=%d, H/LSus=%d/%d, TSus=%d, S=%d, %sHZ=%d.", time, cfg.HIGHVAL, cfg.LOWVAL, cfg.TARGET, cfg.HSLEEPUS, cfg.LSLEEPUS, cfg.TSLEEPUS, cfg.SLEEPSCALE, zintstr, HZ)
 	} else {
 		fmt.Printf("\r%s", long)
 	}
@@ -448,13 +464,18 @@ func checkKey() {
 	for ch != 0 {
 		switch(ch) {
 			case 'q': RUN=0
-			case 'a': cfg.HIGHVAL += 1
-			case 'z': cfg.HIGHVAL -= 1
+			case 'A': cfg.HIGHVAL += 1
+			case 'Z': cfg.HIGHVAL -= 1
+			case 'a': cfg.LOWVAL += 1
+			case 'z': cfg.LOWVAL -= 1
 			case 's': cfg.TARGET  += 1
 			case 'x': cfg.TARGET  -= 1
-			case 'e': cfg.HSLEEPUS *= 2
-			case 'd': cfg.HSLEEPUS += cfg.SLEEPSCALE
-			case 'c': cfg.HSLEEPUS = decIfAbove(cfg.HSLEEPUS, cfg.SLEEPSCALE)
+			case 'E': cfg.HSLEEPUS *= 2
+			case 'D': cfg.HSLEEPUS += cfg.SLEEPSCALE
+			case 'C': cfg.HSLEEPUS = decIfAbove(cfg.HSLEEPUS, cfg.SLEEPSCALE)
+			case 'e': cfg.LSLEEPUS *= 2
+			case 'd': cfg.LSLEEPUS += cfg.SLEEPSCALE
+			case 'c': cfg.LSLEEPUS = decIfAbove(cfg.LSLEEPUS, cfg.SLEEPSCALE)
 			case 'r': cfg.TSLEEPUS *= 2
 			case 'f': cfg.TSLEEPUS += cfg.SLEEPSCALE
 			case 'v': cfg.TSLEEPUS = decIfAbove(cfg.TSLEEPUS, cfg.SLEEPSCALE)
@@ -518,6 +539,14 @@ func testBrightness() (bool) {
 	if test != cfg.HIGHVAL {
 		return false
 	}
+	// test writing LOWVAL
+	setBrightness(cfg.LOWVAL)
+	fmt.Printf("LOWVAL=%d, brightness=%d, err=%v\n", cfg.LOWVAL, test, err)
+	test, err = ReadFileInt(BrightnessFile)
+	fmt.Printf("brightness=%d, err=%v\n", test, err)
+	if test != cfg.LOWVAL {
+		return false
+	}
 	// all good!
 	fmt.Printf("brightness ok!\n")
 	return true
@@ -543,12 +572,16 @@ func main() {
 		hzcheck()
 		checkKey()
 		zcheck()
+		setBrightness(cfg.HIGHVAL)
+		time.Sleep(time.Duration(cfg.HSLEEPUS) * time.Microsecond)
+		checkKey()
+		zcheck()
 		setBrightness(cfg.TARGET)
 		time.Sleep(time.Duration(cfg.TSLEEPUS) * time.Microsecond)
 		checkKey()
 		zcheck()
-		setBrightness(cfg.HIGHVAL)
-		time.Sleep(time.Duration(cfg.HSLEEPUS) * time.Microsecond)
+		setBrightness(cfg.LOWVAL)
+		time.Sleep(time.Duration(cfg.LSLEEPUS) * time.Microsecond)
 	}
 
 	// finalize by using exactly TARGET

@@ -1,5 +1,5 @@
 # backlight-blink
-This is a tool to reset quirky backlight hardware by flashing between 2 brightness levels
+This is a tool to reset quirky backlight hardware by flashing between 3 brightness levels
 ## Building/Running:
 
 ```
@@ -24,12 +24,12 @@ This tool takes no arguments and assumes that it is running on a terminal.  Pipi
 The tool displays a status line while executing to keep you informed of the current state.  The status line looks like either of:
 
 ```
-[23:35:01] HIGHVAL=1, TARGET=255, HSLEEPUS=4096, TSLEEPUS=8192, SLEEPSCALE=2048, ZINTERVAL=0, HZ=19.
+[23:35:01] H/L-VAL=1, TARGET=255, H/L-SLEEPUS=4096, TSLEEPUS=8192, SLEEPSCALE=2048, ZINTERVAL=0, HZ=19.
 ```
 ---OR---
 
 ```
-[22:25:10] HIv=1, TGTv=255, HSus=65536, TSus=65536, S=512, ZI=0, HZ=4.
+[22:25:10] H/Lv=255/1, TGTv=255, H/LSus=65536/65536, TSus=65536, S=512, ZI=0, HZ=4.
 ```
 
 The tool automatically switches to the shorter version when terminal width is limited to try to be informative while not being spammy with newlines.
@@ -38,12 +38,12 @@ The fields are as follows:
 | Field | Default Value | Description |
 |---:|:---:|:---|
 | `[11:22:33]` | N/A | Current local time this display was last updated |
-| `HIGHVAL` / `HIv` | 255 | "High" brightness value (or low, as this is the only brightness value that can be set to zero) |
-| `TARGET` / `TGTv` | 216 | "Target" brightness value.  This is the alternate value that is used.  Also, this is the brightness value assigned on a clean exit. |
-| `HSLEEPUS` / `HSus` | 65,536 (0.066s) | "High" sleep/hold time in Microseconds |
+| `H/L-VAL` / `H/Lv` | 255/1 | "High" and "Low" brightness values |
+| `TARGET` / `TGTv` | 216 | "Target" brightness value.  This is the alternate value that is used.  Also, this is the brightness value assigned on a clean exit.  This cannot be set to Zero. |
+| `H/L-SLEEPUS` / `H/LSus` | 65,536 (0.066s) / 65,536 (0.066s) | "High" and "Low" sleep/hold times in Microseconds |
 | `TSLEEPUS` / `TSus` | 65,536 (0.066s) | "Target" sleep/hold time in Microseconds |
 | `SLEEPSCALE` / `S` | 512 | Amount by which to increase or decrease the sleep times |
-| `ZINTERVAL` / `ZI` | 0 | Interval in which to set the brightness to Zero.  This is in units of "half cycles".  Therefore a value of 4 here means 2 compete cycles (that is, roughly double the current Hz value).  Generally you want this to be somewhat large, as most displays go into DPMS power save with brightness 0.  The choice of "half cycles" allows the user to alternate zeroing in different patterns to try to help reset the display hardware.  A value of 0 disables this feature. |
+| `ZINTERVAL` / `ZI` | 0 | Interval in which to set the brightness to Zero.  This is in units of "1/3 cycles".  Therefore a value of 6 here means 2 compete cycles (that is, roughly triple the current Hz value).  Generally you want this to be somewhat large, as most displays go into DPMS power save with brightness 0.  The choice of "1/3 cycles" allows the user to alternate zeroing in different patterns to try to help reset the display hardware.  A value of 0 disables this feature. |
 | `HZ` | N/A | Current measured complete cycle time in Hz based on the SLEEP values above and current system load |
 
 ## Keys:
@@ -51,13 +51,18 @@ The fields are as follows:
 | Key | Description |
 |:---:|:---|
 | q | Quit the tool cleanly |
-| a | Increase `HIGHVAL` by 1 |
-| z | Decrease `HIGHVAL` by 1 |
+| A | Increase `HIGHVAL` by 1 |
+| Z | Decrease `HIGHVAL` by 1 |
+| a | Increase `LOWVAL` by 1 |
+| z | Decrease `LOWVAL` by 1 |
 | s | Increase `TARGET` by 1 |
 | x | Decrease `TARGET` by 1 |
-| e | Double `HSLEEPUS` |
-| d | Increase `HSLEEPUS` by `SLEEPSCALE` |
-| c | Decrease `HSLEEPUS` by `SLEEPSCALE`, but it cannot go lower than 0 |
+| E | Double `HSLEEPUS` |
+| D | Increase `HSLEEPUS` by `SLEEPSCALE` |
+| C | Decrease `HSLEEPUS` by `SLEEPSCALE`, but it cannot go lower than 0 |
+| e | Double `LSLEEPUS` |
+| d | Increase `LSLEEPUS` by `SLEEPSCALE` |
+| c | Decrease `LSLEEPUS` by `SLEEPSCALE`, but it cannot go lower than 0 |
 | r | Double `TSLEEPUS` |
 | f | Increase `TSLEEPUS` by `SLEEPSCALE` |
 | v | Decrease `TSLEEPUS` by `SLEEPSCALE`, but it cannot go lower than 1 |
