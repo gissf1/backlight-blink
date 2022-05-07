@@ -29,7 +29,7 @@ The tool displays a status line while executing to keep you informed of the curr
 ---OR---
 
 ```
-[22:25:10] HIv=1, TGTv=255, HSus=100000, TSus=100000, ZI=0, S=128, HZ=4.
+[22:25:10] HIv=1, TGTv=255, HSus=65536, TSus=65536, ZI=0, S=512, HZ=4.
 ```
 
 The tool automatically switches to the shorter version when terminal width is limited to try to be informative while not being spammy with newlines.
@@ -40,10 +40,10 @@ The fields are as follows:
 | `[11:22:33]` | N/A | Current local time this display was last updated |
 | `HIGHVAL` / `HIv` | 255 | "High" brightness value (or low, as this is the only brightness value that can be set to zero) |
 | `TARGET` / `TGTv` | 216 | "Target" brightness value.  This is the alternate value that is used.  Also, this is the brightness value assigned on a clean exit. |
-| `HSLEEPUS` / `HSus` | 100,000 (0.1s) | "High" sleep/hold time in Microseconds |
-| `TSLEEPUS` / `TSus` | 100,000 (0.1s) | "Target" sleep/hold time in Microseconds |
+| `HSLEEPUS` / `HSus` | 65,536 (0.066s) | "High" sleep/hold time in Microseconds |
+| `TSLEEPUS` / `TSus` | 65,536 (0.066s) | "Target" sleep/hold time in Microseconds |
 | `ZINTERVAL` / `ZI` | 0 | Interval in which to set the brightness to Zero.  This is in units of "half cycles".  Therefore a value of 4 here means 2 compete cycles (that is, roughly double the current Hz value).  Generally you want this to be somewhat large, as most displays go into DPMS power save with brightness 0.  The choice of "half cycles" allows the user to alternate zeroing in different patterns to try to help reset the display hardware.  A value of 0 disables this feature. |
-| `SLEEPSCALE` / `S` | 128 | Amount by which to increase or decrease the sleep times |
+| `SLEEPSCALE` / `S` | 512 | Amount by which to increase or decrease the sleep times |
 | `HZ` | N/A | Current measured complete cycle time in Hz based on the SLEEP values above and current system load |
 
 ## Keys:

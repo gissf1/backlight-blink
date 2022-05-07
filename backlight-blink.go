@@ -28,9 +28,9 @@ func DefaultConfig() (ConfigFileType) {
 	return ConfigFileType{
 		255,
 		216,
-		100000,
-		100000,
-		128,
+		65536,
+		65536,
+		512,
 		0,
 	}
 }
