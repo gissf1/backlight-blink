@@ -514,7 +514,7 @@ func main() {
 	}
 
 	// finalize by using exactly TARGET
-	fmt.Printf("\r[%s] [TGT] %d.  Done.\n", getTimeString(), cfg.TARGET)
+	fmt.Printf("\n[%s] [TGT] %d.  Done.\n", getTimeString(), cfg.TARGET)
 	setBrightness(cfg.TARGET)
 	elapsedTime := time.Now().Sub(startTime)
 	fmt.Printf("Ran for a total of %v seconds\n", elapsedTime)
