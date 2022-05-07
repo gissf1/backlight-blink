@@ -16,6 +16,7 @@ import (
 const PathSeparator = string(os.PathSeparator)
 
 type ConfigFileType struct {
+	VERSION    string
 	HIGHVAL    int
 	TARGET     int
 	HSLEEPUS   int
@@ -26,6 +27,7 @@ type ConfigFileType struct {
 
 func DefaultConfig() (ConfigFileType) {
 	return ConfigFileType{
+		"",
 		255,
 		216,
 		65536,
@@ -36,6 +38,8 @@ func DefaultConfig() (ConfigFileType) {
 }
 
 var (
+	BUILDDATE string
+	configVersionLevel int = 0
 	ENV = os.Environ()
 	UID = os.Getuid()
 	EUID = os.Geteuid()
@@ -247,21 +251,48 @@ func setBrightness(brightness int) {
 	}
 }
 
+func GetConfigFilename() (string) {
+	if configVersionLevel == 0 {
+		return "/tmp/" + path.Base(os.Args[0]) + ".tmp"
+	}
+	keepDate := configVersionLevel << 2
+	return "/tmp/" + path.Base(os.Args[0]) + "." + (BUILDDATE[:keepDate]) + ".tmp"
+}
+
 func LoadConfig() {
 	cfg = DefaultConfig()
 	// read last config
-	TMPFN = "/tmp/" + path.Base(os.Args[0]) + ".tmp"
+	TMPFN = GetConfigFilename()
 	configData, err := os.ReadFile(TMPFN)
 	if err == nil {
 		err = toml.Unmarshal(configData, &cfg)
-		if err == nil {
-			fmt.Fprintf(os.Stderr, "loaded cfg=%v\n", cfg)
-		} else {
+		if err != nil {
 			fmt.Fprintf(os.Stderr, "Unable to parse config: %v\n", err)
 			os.Exit(1)
 		}
+		// empty version means it was unspecified
+		if cfg.VERSION == "" {
+			fmt.Fprintf(os.Stderr, "rejecting unversioned cfg: %v\n", cfg)
+			cfg = DefaultConfig()
+			configVersionLevel++
+			LoadConfig()
+		} else if cfg.VERSION < "202205" {
+			fmt.Fprintf(os.Stderr, "rejecting old cfg: %v\n", cfg)
+			cfg = DefaultConfig()
+			configVersionLevel++
+			LoadConfig()
+		} else if cfg.VERSION > BUILDDATE {
+			fmt.Fprintf(os.Stderr, "rejecting newer cfg: %v\n", cfg)
+			cfg = DefaultConfig()
+			configVersionLevel++
+			LoadConfig()
+		} else {
+			fmt.Fprintf(os.Stderr, "loaded cfg=%v\n", cfg)
+			cfg.VERSION = BUILDDATE
+		}
 	} else {
 		fmt.Fprintf(os.Stderr, "using default cfg=%#v\n", cfg)
+		cfg.VERSION = BUILDDATE
 	}
 }
 
