@@ -43,7 +43,7 @@ The fields are as follows:
 | `H/L-SLEEPUS` / `H/LSus` | 65,536 (0.066s) / 65,536 (0.066s) | "High" and "Low" sleep/hold times in Microseconds |
 | `TSLEEPUS` / `TSus` | 65,536 (0.066s) | "Target" sleep/hold time in Microseconds |
 | `SLEEPSCALE` / `S` | 512 | Amount by which to increase or decrease the sleep times |
-| `ZINTERVAL` / `ZI` | 0 | Interval in which to set the brightness to Zero.  This is in units of "1/3 cycles".  Therefore a value of 6 here means 2 compete cycles (that is, roughly triple the current Hz value).  Generally you want this to be somewhat large, as most displays go into DPMS power save with brightness 0.  The choice of "1/3 cycles" allows the user to alternate zeroing in different patterns to try to help reset the display hardware.  A value of 0 disables this feature. |
+| `ZINTERVAL` / `ZI` | 0 | Interval in which to set the brightness to Zero.  This is in units of "1/3 cycles".  Therefore a value of 6 here means 2 compete cycles (that is, it can try to Zero at a frequency of up to 3x the current Hz rate).  Generally you want this to be somewhat large, as most displays go into DPMS power save with brightness 0.  The choice of "1/3 cycles" allows the user to alternate zeroing in different patterns to try to help reset the display hardware.  A value of 0 disables this feature. |
 | `HZ` | N/A | Current measured complete cycle time in Hz based on the SLEEP values above and current system load |
 
 ## Keys:
